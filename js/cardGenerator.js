@@ -2,6 +2,7 @@ import { getValentineDescription, generateValentineImage } from './api.js';
 import { saveCard } from './db.js';
 import { handleHover, resetHover } from './components/card.js';
 import { showToast } from './utils.js';
+let room = new WebsimSocket();
 
 export async function generateCard() {
   // Remove existing card and submenu
@@ -169,10 +170,10 @@ export async function generateCard() {
     }
     
     try {
-      const valentine = await websim.collection('valentines').create({
+      const valentine = await room.collection('valentines').create({
         ...cardData,
         recipient,
-        sender: websim.party.client.username,
+        sender: room.party.client.username,
         sent_at: new Date().toISOString()
       });
       
