@@ -18,7 +18,7 @@ export function displayFilteredCards(cards, selectedTypes, filterMode, isPalaceV
   } else if (filterMode === 'and') {
     filteredCards = cards.filter(card => 
       selectedTypes.every(type => 
-        (card.pogetype || card.type) 
+        (card.pogetype || card.type)
         .split('/')
         .map(t => t.trim())
         .includes(type)
@@ -27,7 +27,7 @@ export function displayFilteredCards(cards, selectedTypes, filterMode, isPalaceV
   } else { // 'single' or 'or'
     filteredCards = cards.filter(card => 
       selectedTypes.some(type => 
-        (card.pogetype || card.type) 
+        (card.pogetype || card.type)
         .split('/')
         .map(t => t.trim())
         .includes(type)
@@ -38,7 +38,7 @@ export function displayFilteredCards(cards, selectedTypes, filterMode, isPalaceV
   if (filteredCards.length === 0) {
     grid.innerHTML = `
       <div class="no-cards-message">
-        No Pogemons found matching the selected filters
+        No Valentine cards found matching the selected filters
       </div>
     `;
     return;

@@ -91,9 +91,7 @@ export async function generateCard() {
     type: valentineData.type,
     style: valentineData.style,
     colorScheme: valentineData.color_scheme,
-    imageUrl: imageUrl,
-    sender: room.party.client.username,
-    timestamp: new Date().getTime()
+    imageUrl: imageUrl
   };
 
   if (imageUrl) {

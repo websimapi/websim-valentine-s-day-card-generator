@@ -23,7 +23,7 @@ export async function createCollectionViewer() {
   viewer.innerHTML = `
     <div class="collection-header">
       <div class="collection-header-title">
-        <h2>Your Valentine Box Collection</h2>
+        <h2>Your Valentine Box</h2>
         <button class="import-btn" title="Import Collection">
           <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" transform="rotate(180, 12, 12)"/>
@@ -47,7 +47,7 @@ export async function createCollectionViewer() {
       <div class="collection-header-buttons">
         <button class="delete-mode-toggle" title="Toggle Delete Mode">
           <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12z"/>
+            <path d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14"/>
           </svg>
         </button>
         <button class="close-collection" aria-label="Close Collection View" title="Close">×</button>
@@ -89,13 +89,13 @@ export async function createCollectionViewer() {
       flexIcon.style.display = 'none';
     }
     
-    const title = viewer.querySelector('h2');
+    const titleElement = viewer.querySelector('h2');
     const grid = viewer.querySelector('.collection-grid');
     grid.innerHTML = '';
 
     if (showingPalace) {
-      title.textContent = 'PoGePalace Collection';
-      deleteToggle.style.display = 'none'; // Hide delete toggle in palace view
+      titleElement.textContent = 'PoGePalace Collection';
+      deleteToggle.style.display = 'none';
       importBtn.style.display = 'none';
       exportBtn.style.display = 'none';
       
@@ -103,13 +103,11 @@ export async function createCollectionViewer() {
         const pogepalace = new WebsimSocket();
         const pogemons = await pogepalace.collection('pogemon').getList();
         
-        displayFilteredCards(pogemons, [], 'single', true); // Pass true for isPalaceView
-
-        // Subscribe to real-time updates
+        displayFilteredCards(pogemons, [], 'single', true);
         pogepalace.collection('pogemon').subscribe((updatedPogemons) => {
-          if (showingPalace) { // Only update if still showing palace
+          if (showingPalace) {
             grid.innerHTML = '';
-            displayFilteredCards(updatedPogemons, [], 'single', true); // Pass true for isPalaceView
+            displayFilteredCards(updatedPogemons, [], 'single', true);
           }
         });
       } catch (error) {
@@ -117,12 +115,11 @@ export async function createCollectionViewer() {
         showToast('Failed to load PoGePalace collection', true);
       }
     } else {
-      title.textContent = 'Your Valentine Box Collection';
-      deleteToggle.style.display = ''; // Show delete toggle in flex view
+      titleElement.textContent = 'Your Valentine Box';
+      deleteToggle.style.display = '';
       importBtn.style.display = '';
       exportBtn.style.display = '';
       
-      // Load local collection
       const cards = await getAllCards();
       cards.sort((a, b) => b.timestamp - a.timestamp);
       displayFilteredCards(cards, [], 'single');
@@ -140,13 +137,12 @@ export async function createCollectionViewer() {
     if (showingPalace) {
       showingPalace = false;
       palaceToggleBtn.classList.remove('active');
-      const title = viewer.querySelector('h2');
-      title.textContent = 'Your Valentine Box Collection';
+      const titleElement = viewer.querySelector('h2');
+      titleElement.textContent = 'Your Valentine Box';
       deleteToggle.style.display = '';
       importBtn.style.display = '';
       exportBtn.style.display = '';
       
-      // Load Valentine Box collection
       getAllCards().then(cards => {
         cards.sort((a, b) => b.timestamp - a.timestamp);
         displayFilteredCards(cards, [], 'single');
@@ -161,11 +157,9 @@ export async function createCollectionViewer() {
     cards.forEach(card => {
       card.classList.toggle('delete-mode');
       
-      // Remove existing click handlers
       const newCard = card.cloneNode(true);
       card.parentNode.replaceChild(newCard, card);
       
-      // Add appropriate click handler based on mode
       if (deleteMode) {
         newCard.addEventListener('click', async (e) => {
           e.stopPropagation();
@@ -177,7 +171,7 @@ export async function createCollectionViewer() {
               showToast(`${cardData.name} was released successfully!`);
             } catch (error) {
               console.error('Error deleting card:', error);
-              showToast('Failed to release Pogemon', true);
+              showToast('Failed to release card', true);
             }
           }
         });
@@ -186,7 +180,7 @@ export async function createCollectionViewer() {
           const palaceButton = e.target.closest('.palace-button');
           
           if (palaceButton) {
-            e.stopPropagation(); // Prevent card load
+            e.stopPropagation();
             try {
               await showPalaceDialog(newCard.cardData);
             } catch (error) {
@@ -200,7 +194,6 @@ export async function createCollectionViewer() {
         });
       }
       
-      // Preserve the cardData
       newCard.cardData = card.cardData;
     });
   });
@@ -209,7 +202,7 @@ export async function createCollectionViewer() {
     try {
       const cards = await getAllCards();
       const exportData = {
-        valentinebox: {
+        valentineBox: {
           version: 1,
           cards: cards,
           exported_at: new Date().toISOString()
@@ -220,13 +213,13 @@ export async function createCollectionViewer() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `valentinebox-export-${new Date().toISOString().split('T')[0]}.json`;
+      a.download = `valentine-box-export-${new Date().toISOString().split('T')[0]}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      showToast('Valentine Box collection exported successfully!');
+      showToast('Valentine Box exported successfully!');
     } catch (error) {
       console.error('Error exporting collection:', error);
       showToast('Failed to export collection', true);
@@ -245,25 +238,21 @@ export async function createCollectionViewer() {
       const text = await file.text();
       const data = JSON.parse(text);
 
-      // Validate the imported data structure
-      if (!data.valentinebox || !Array.isArray(data.valentinebox.cards)) {
+      if (!data.valentineBox || !Array.isArray(data.valentineBox.cards)) {
         throw new Error('Invalid file format');
       }
 
-      // Show import options dialog
-      const importChoice = await showImportDialog(data.valentinebox.cards.length);
+      const importChoice = await showImportDialog(data.valentineBox.cards.length);
       if (importChoice === null) {
         fileInput.value = '';
-        return; // User cancelled
+        return;
       }
 
-      // Get existing cards to check for duplicates
       const existingCards = await getAllCards();
       let cardsToImport;
       
       if (importChoice === 'skip') {
-        // Filter out exact duplicates
-        cardsToImport = data.valentinebox.cards.filter(importCard => 
+        cardsToImport = data.valentineBox.cards.filter(importCard => 
           !existingCards.some(existingCard => 
             existingCard.name === importCard.name &&
             existingCard.description === importCard.description &&
@@ -271,21 +260,17 @@ export async function createCollectionViewer() {
           )
         );
       } else {
-        // Import all cards
-        cardsToImport = data.valentinebox.cards;
+        cardsToImport = data.valentineBox.cards;
       }
 
-      // Import the cards
       const importPromises = cardsToImport.map(card => saveCard(card));
       await Promise.all(importPromises);
       
-      // Refresh the collection display
       const grid = viewer.querySelector('.collection-grid');
       grid.innerHTML = '';
       await showCollection();
 
-      // Show success message
-      const skippedCount = data.valentinebox.cards.length - cardsToImport.length;
+      const skippedCount = data.valentineBox.cards.length - cardsToImport.length;
       if (importChoice === 'skip' && skippedCount > 0) {
         showToast(`Imported ${cardsToImport.length} cards. Skipped ${skippedCount} duplicate(s).`);
       } else {
@@ -296,7 +281,6 @@ export async function createCollectionViewer() {
       showToast('Failed to import collection: ' + error.message, true);
     }
 
-    // Reset the file input
     fileInput.value = '';
   });
 
@@ -304,21 +288,20 @@ export async function createCollectionViewer() {
 }
 
 export async function handleRegisterToFlex(palaceCardData) {
-  // First check for duplicates
   const existingCards = await getAllCards();
   const isDuplicate = existingCards.some(card => 
     card.name === palaceCardData.name &&
     card.description === palaceCardData.description &&
     (card.imageUrl === palaceCardData.backupImageUrl || card.imageUrl === palaceCardData.imageUrl)
   );
-
+  
   const dialog = document.createElement('div');
   dialog.className = 'confirm-dialog';
   dialog.innerHTML = `
     <h3>Register to Valentine Box</h3>
-    <p>Would you like to add ${palaceCardData.name} to your Valentine Box collection?</p>
+    <p>Would you like to add ${palaceCardData.name} to your Valentine Box?</p>
     ${isDuplicate ? `<p style="color: #ff5252; font-size: 0.9em; margin-top: 8px;">
-      Note: You already have an exact copy of this Pogemon in your collection
+      Note: You already have an exact copy of this card in your collection
     </p>` : ''}
     <div class="confirm-dialog-buttons">
       <button class="cancel">Cancel</button>
@@ -344,11 +327,9 @@ export async function handleRegisterToFlex(palaceCardData) {
 
       confirmBtn.addEventListener('click', async () => {
         try {
-          // Show loading state
           confirmBtn.disabled = true;
           spinner.classList.remove('hidden');
 
-          // Create a new card data object mapping palace data to flex format
           const flexCardData = {
             name: palaceCardData.name,
             description: palaceCardData.description,
@@ -359,7 +340,6 @@ export async function handleRegisterToFlex(palaceCardData) {
             backupImageUrl: palaceCardData.backupImageUrl
           };
 
-          // Save to local IndexDB
           await saveCard(flexCardData);
           
           dialog.remove();
@@ -367,13 +347,12 @@ export async function handleRegisterToFlex(palaceCardData) {
             isDuplicate ? ' (Duplicate copy)' : ''
           }`);
           
-          // Refresh the collection view if in palace view
           const viewer = document.querySelector('.collection-viewer');
           if (viewer && viewer.querySelector('h2').textContent.includes('PoGePalace')) {
             const palaceToggleBtn = viewer.querySelector('.palace-toggle-btn');
             if (palaceToggleBtn) {
-              palaceToggleBtn.click(); // Switch to Valentine Box view
-              setTimeout(() => palaceToggleBtn.click(), 100); // Switch back to palace view
+              palaceToggleBtn.click();
+              setTimeout(() => palaceToggleBtn.click(), 100);
             }
           }
           
@@ -437,7 +416,7 @@ export async function showConfirmDialog(cardData) {
   const dialog = document.createElement('div');
   dialog.className = 'confirm-dialog';
   dialog.innerHTML = `
-    <h3>Release Pogemon</h3>
+    <h3>Release Card</h3>
     <p>Are you sure you want to release ${cardData.name}?</p>
     <div class="confirm-dialog-buttons">
       <button class="cancel">Cancel</button>
