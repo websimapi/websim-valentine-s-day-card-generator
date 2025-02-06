@@ -23,7 +23,7 @@ export async function createCollectionViewer() {
   viewer.innerHTML = `
     <div class="collection-header">
       <div class="collection-header-title">
-        <h2>Your PoGeFlex Collection</h2>
+        <h2>Your Valentine Box Collection</h2>
         <button class="import-btn" title="Import Collection">
           <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" transform="rotate(180, 12, 12)"/>
@@ -80,7 +80,7 @@ export async function createCollectionViewer() {
     const flexIcon = palaceToggleBtn.querySelector('.flex-view-icon');
     
     if (showingPalace) {
-      palaceToggleBtn.title = 'Go to PoGeFlex';
+      palaceToggleBtn.title = 'Go to Valentine Box';
       palaceIcon.style.display = 'none';
       flexIcon.style.display = '';
     } else {
@@ -117,7 +117,7 @@ export async function createCollectionViewer() {
         showToast('Failed to load PoGePalace collection', true);
       }
     } else {
-      title.textContent = 'Your PoGeFlex Collection';
+      title.textContent = 'Your Valentine Box Collection';
       deleteToggle.style.display = ''; // Show delete toggle in flex view
       importBtn.style.display = '';
       exportBtn.style.display = '';
@@ -136,17 +136,17 @@ export async function createCollectionViewer() {
     const cards = viewer.querySelectorAll('.mini-card');
     cards.forEach(card => card.classList.remove('delete-mode'));
     
-    // Reset to PoGeFlex view for next open
+    // Reset to Valentine Box view for next open
     if (showingPalace) {
       showingPalace = false;
       palaceToggleBtn.classList.remove('active');
       const title = viewer.querySelector('h2');
-      title.textContent = 'Your PoGeFlex Collection';
+      title.textContent = 'Your Valentine Box Collection';
       deleteToggle.style.display = '';
       importBtn.style.display = '';
       exportBtn.style.display = '';
       
-      // Load PoGeFlex collection
+      // Load Valentine Box collection
       getAllCards().then(cards => {
         cards.sort((a, b) => b.timestamp - a.timestamp);
         displayFilteredCards(cards, [], 'single');
@@ -209,7 +209,7 @@ export async function createCollectionViewer() {
     try {
       const cards = await getAllCards();
       const exportData = {
-        pogeflex: {
+        valentinebox: {
           version: 1,
           cards: cards,
           exported_at: new Date().toISOString()
@@ -220,13 +220,13 @@ export async function createCollectionViewer() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `pogeflex-export-${new Date().toISOString().split('T')[0]}.json`;
+      a.download = `valentinebox-export-${new Date().toISOString().split('T')[0]}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      showToast('PoGeFlex collection exported successfully!');
+      showToast('Valentine Box collection exported successfully!');
     } catch (error) {
       console.error('Error exporting collection:', error);
       showToast('Failed to export collection', true);
@@ -246,12 +246,12 @@ export async function createCollectionViewer() {
       const data = JSON.parse(text);
 
       // Validate the imported data structure
-      if (!data.pogeflex || !Array.isArray(data.pogeflex.cards)) {
+      if (!data.valentinebox || !Array.isArray(data.valentinebox.cards)) {
         throw new Error('Invalid file format');
       }
 
       // Show import options dialog
-      const importChoice = await showImportDialog(data.pogeflex.cards.length);
+      const importChoice = await showImportDialog(data.valentinebox.cards.length);
       if (importChoice === null) {
         fileInput.value = '';
         return; // User cancelled
@@ -263,7 +263,7 @@ export async function createCollectionViewer() {
       
       if (importChoice === 'skip') {
         // Filter out exact duplicates
-        cardsToImport = data.pogeflex.cards.filter(importCard => 
+        cardsToImport = data.valentinebox.cards.filter(importCard => 
           !existingCards.some(existingCard => 
             existingCard.name === importCard.name &&
             existingCard.description === importCard.description &&
@@ -272,7 +272,7 @@ export async function createCollectionViewer() {
         );
       } else {
         // Import all cards
-        cardsToImport = data.pogeflex.cards;
+        cardsToImport = data.valentinebox.cards;
       }
 
       // Import the cards
@@ -285,7 +285,7 @@ export async function createCollectionViewer() {
       await showCollection();
 
       // Show success message
-      const skippedCount = data.pogeflex.cards.length - cardsToImport.length;
+      const skippedCount = data.valentinebox.cards.length - cardsToImport.length;
       if (importChoice === 'skip' && skippedCount > 0) {
         showToast(`Imported ${cardsToImport.length} cards. Skipped ${skippedCount} duplicate(s).`);
       } else {
@@ -315,8 +315,8 @@ export async function handleRegisterToFlex(palaceCardData) {
   const dialog = document.createElement('div');
   dialog.className = 'confirm-dialog';
   dialog.innerHTML = `
-    <h3>Register to PoGeFlex</h3>
-    <p>Would you like to add ${palaceCardData.name} to your PoGeFlex collection?</p>
+    <h3>Register to Valentine Box</h3>
+    <p>Would you like to add ${palaceCardData.name} to your Valentine Box collection?</p>
     ${isDuplicate ? `<p style="color: #ff5252; font-size: 0.9em; margin-top: 8px;">
       Note: You already have an exact copy of this Pogemon in your collection
     </p>` : ''}
@@ -363,7 +363,7 @@ export async function handleRegisterToFlex(palaceCardData) {
           await saveCard(flexCardData);
           
           dialog.remove();
-          showToast(`${palaceCardData.name} was successfully registered to your PoGeFlex collection!${
+          showToast(`${palaceCardData.name} was successfully registered to your Valentine Box!${
             isDuplicate ? ' (Duplicate copy)' : ''
           }`);
           
@@ -372,15 +372,15 @@ export async function handleRegisterToFlex(palaceCardData) {
           if (viewer && viewer.querySelector('h2').textContent.includes('PoGePalace')) {
             const palaceToggleBtn = viewer.querySelector('.palace-toggle-btn');
             if (palaceToggleBtn) {
-              palaceToggleBtn.click(); // Switch to PoGeFlex view
+              palaceToggleBtn.click(); // Switch to Valentine Box view
               setTimeout(() => palaceToggleBtn.click(), 100); // Switch back to palace view
             }
           }
           
           resolve(true);
         } catch (error) {
-          console.error('Failed to register to PoGeFlex:', error);
-          showToast('Failed to register to PoGeFlex', true);
+          console.error('Failed to register to Valentine Box:', error);
+          showToast('Failed to register to Valentine Box', true);
           confirmBtn.disabled = false;
           spinner.classList.add('hidden');
         }

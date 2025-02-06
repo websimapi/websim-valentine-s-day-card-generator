@@ -27,6 +27,7 @@ export const saveCard = async (cardData) => {
     const store = transaction.objectStore('cards');
     
     const newCard = {
+      id: cardData.id,
       title: cardData.title,
       message: cardData.message,
       type: cardData.type,
@@ -34,7 +35,9 @@ export const saveCard = async (cardData) => {
       colorScheme: cardData.colorScheme,
       imageUrl: cardData.imageUrl,
       backupImageUrl: cardData.backupImageUrl,
-      timestamp: new Date().getTime()
+      timestamp: new Date().getTime(),
+      sender: cardData.sender,
+      recipient: cardData.recipient
     };
 
     const request = store.add(newCard);
